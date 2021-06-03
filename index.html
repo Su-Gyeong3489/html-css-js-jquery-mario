@@ -1,6 +1,191 @@
-<html>
-  <title>마리오</title>
-  <body>
-    <h1>Hello Mario</h1>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>마리오 게임</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    @font-face {
+      font-family: 'Amatica SC';
+      font-style: normal;
+      font-weight: 400;
+      src: local('Amatica SC'), url(https://fonts.gstatic.com/s/amaticasc/v1/r4IyjqPgTL10SERuDuUzpAzyDMXhdD8sAj6OAJTFsBI.woff2) format('woff2');
+    }
+
+    #background {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: url("asset/trial_background.png");
+      background-size: 100% 100%;
+      animation-name: bg-slide;
+      animation: bg-slide 60s linear infinite;
+    }
+
+    @keyframes bg-slide {
+
+      from {
+        background-position: 0 0;
+      }
+
+      to {
+        background-position: -1300px 0;
+      }
+    }
+
+    #container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 1px solid black;
+    }
+
+    #mario {
+      position: absolute;
+      width: 100px;
+      bottom: 100px;
+      left: 50px;
+      margin: 0px;
+    }
+
+    #enemy {
+      position: absolute;
+      width: 68px;
+      bottom: 100px;
+      right: 50px;
+      margin: 0px;
+    }
+
+    #score {
+      position: absolute;
+      top: 80px;
+      left: 80px;
+      z-index: 100;
+      font-size: 50px;
+      font-family: 'Amatica SC';
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="container">
+    <h1 id="score">SCORE:</h1>
+    <div id="background"></div>
+    <img id="mario" src="asset/Mario.gif" alt="">
+    <img id="enemy" src="asset/gumba.gif" alt="">
+  </div>
+
+  <script>
+    var score = 0;
+
+    function reset_score() {
+      score = 0;
+      document.getElementById('score').innerHTML = "SCORE: " + score;
+    }
+
+    function add_score() {
+      score = score + 100;
+      document.getElementById('score').innerHTML = "SCORE: " + score;
+      //alert(score);
+    }
+
+    let isJumping = false; //isJumping에 대한 선언
+
+    // 주인공 점프
+    function jump() {
+      isJumping = true;    //jump()하면 true
+      mario.animate({
+        bottom: "+=400px" //뛰고 
+      }).animate({
+        bottom: "-=400px" //다시 내려오고
+      }, function () {
+        isJumping = false; //
+      });
+    }
+    //적의 움직임
+    function enemyMove() {
+      $("#enemy").animate({
+        right: "120%"
+      }, 5000, function () {
+        $("#enemy").css("right", "-800px");
+      });
+    }
+    //마리오의 죽음 확인 
+    function deadCheck() {
+      let isDead = false; //기본값 설정 
+
+      let mario = $("#mario");  //마리오 선언
+      let enemy = $("#enemy");  //적 선언 
+
+      let marioRightX =
+        parseInt(mario.css("left").replace("px", "")) +   //마리오 위치 계산 
+        parseInt(mario.css("width").replace("px", ""));   //문자열이므로 px를 없애고 정수로 변환
+
+      let marioLeftX =
+        parseInt(mario.css("left").replace("px", ""));
+
+      let enemyLeftX =
+        parseInt(enemy.css("left").replace("px", ""));
+
+      let marioBottomX =
+        parseInt(mario.css("bottom").replace("px", ""));
+
+      let enemyRightX =
+        parseInt(enemy.css("left").replace("px", "")) +
+        parseInt(enemy.css("width").replace("px", ""));
+
+      let enemyTopX =
+        parseInt(enemy.css("bottom").replace("px", "")) +
+        parseInt(enemy.css("height").replace("px", ""));
+
+      if (marioRightX > enemyLeftX && marioBottomX < enemyTopX) {
+        if (marioLeftX < enemyRightX) {
+          isDead = true;
+        }
+      }
+
+      return isDead; //리턴값 
+    }
+
+    // 스페이스바 누르면 점프
+    let mario = $("#mario");
+
+    $("body").keydown(function (event) {
+      switch (event.code) {
+        case "Space":
+          // 스페이스 연타 방지
+          if (isJumping == false) {
+            jump();
+            add_score();
+          }
+          break;
+      }
+    });
+
+    // 대략 30frame 화면 갱신
+    setInterval(function () {
+      // 적 이동 
+      enemyMove();
+
+      // 죽었는지 체크
+      if (deadCheck()) {
+        alert("마리오가 죽었습니다.")
+        reset_score();
+        //console.log("마리오 사망"); //
+      }
+    }, 33);
+
+  </script>
+</body>
+
 </html>
